@@ -1,111 +1,57 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 public class Server {
-    private ServerSocket serverSocket;
-    private List<ClientController> clients = new ArrayList<>();
 
-    public Server(int port) {
-        try {
-            serverSocket = new ServerSocket(port);
-            System.out.println("Server is up and running at " + port);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+    private static List<Socket> cllentList = new ArrayList<>();
+    private static String message = "";
+    public static void main(String[] args) throws IOException {
 
-    public void startServer() {
-        try {
-            while (!serverSocket.isClosed()) {
-                Socket clientSocket = serverSocket.accept();
-                System.out.println("New client connected: " + clientSocket);
-
-                // Create a new ClientController instance for the connected client
-                ClientController clientController = new ClientController(clientSocket);
-                clients.add(clientController);
-
-                // Start a separate thread to handle client communication
-                Thread clientThread = new Thread(clientController);
-                clientThread.start();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void closeServerSocket() {
-        try {
-            if (serverSocket != null && !serverSocket.isClosed()) {
-                serverSocket.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void main(String[] args) {
-        int port = 5050; // Change this to the desired port number
-        Server serverApp = new Server(port);
-        serverApp.startServer();
-    }
-
-    // Inner class for handling client communication
-    private class ClientController implements Runnable {
-        private Socket clientSocket;
-        private PrintWriter out;
-        private BufferedReader in;
-
-        public ClientController(Socket socket) {
-            this.clientSocket = socket;
-            try {
-                out = new PrintWriter(socket.getOutputStream(), true);
-                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        @Override
-        public void run() {
-            try {
-                String message;
-                while ((message = in.readLine()) != null) {
-                    System.out.println("Received from client: " + message);
-
-                    // Broadcast the received message to all clients
-                    broadcast(message);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                // Client disconnected, cleanup
+        ServerSocket serverSocket = new ServerSocket(5050);
+        while(true){
+            System.out.println("Waiting for incoming connection");
+            Socket localSocket = serverSocket.accept();
+            new Thread(()->{
+                cllentList.add(localSocket);
                 try {
-                    clientSocket.close();
-                    clients.remove(this);
+                    InputStream is = localSocket.getInputStream();
+                    BufferedInputStream bis = new BufferedInputStream(is);
+
+                    while (true) {
+                        byte[] buffer = new byte[1024];
+                        int read = bis.read(buffer);
+                        if (read == -1) throw new EOFException();
+                        message += new String(buffer, 0, read);
+                        System.out.println(message);
+                        notifyClients();
+                    }
+                }catch (EOFException e) {
+                    cllentList.remove(localSocket);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    throw new RuntimeException(e);
                 }
-            }
-        }
 
-        public void sendMessage(String message) {
-            out.println(message);
-        }
-
-        private void broadcast(String message) {
-            for (ClientController client : clients) {
-                // Send the message to all clients except the sender
-                if (client != this) {
-                    client.sendMessage(message);
-                }
-            }
+            }).start();
         }
     }
+    public static void notifyClients(){
+        new Thread(() ->{
+            for (Socket client : cllentList) {
+                try {
+                    OutputStream os = client.getOutputStream();
+                    BufferedOutputStream bos = new BufferedOutputStream(os);
+                    bos.write(message.getBytes());
+                    bos.flush();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+            }
+        }).start();
+
+    }
+
 }
