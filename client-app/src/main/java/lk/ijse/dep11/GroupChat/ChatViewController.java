@@ -19,11 +19,14 @@ public class ChatViewController {
     public ListView<String> lstLoggedUsers;
     public TextField txtMassage;
     public Button btnSend;
+
+
+    public static String name = "";
     public Label lblName;
 
-    public static void initData(String name) {
-        
 
+    public void initData(String data) {
+        lblName.setText(data);
     }
 
     public Socket remoteSocket;
@@ -34,36 +37,38 @@ public class ChatViewController {
         if(btnSend.getText() == null){
             return;
         }else{
-            txtChatHistory.setText(txtChatHistory.getText()+"\n"+txtMassage.getText());
+                try {
+                    OutputStream os = remoteSocket.getOutputStream();
+                    BufferedOutputStream bos = new BufferedOutputStream(os);
+                    bos.write((lblName.getText()+" :"+txtMassage.getText()+"\n").getBytes());
+                    bos.flush();
+                    txtMassage.clear();
 
-            try {
-                OutputStream is = remoteSocket.getOutputStream();
-                BufferedOutputStream bos = new BufferedOutputStream(is);
-                bos.write(txtMassage.getText().getBytes());
-
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-
-
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
         }
 
     }
     public void initialize() throws IOException {
-        remoteSocket = new Socket("192.168.136.102", 5500);
-//        readHistory();
+
         new Thread(() -> {
+
             InputStream is = null;
             try {
+
+                remoteSocket = new Socket("192.168.8.190", 5050);
                 is = remoteSocket.getInputStream();
                 BufferedInputStream bis = new BufferedInputStream(is);
                 byte[] buffer = new byte[1024];
                 int read =-1;
-                String text = txtChatHistory.getText();
                 while((read = bis.read(buffer)) != -1){
-                    text += new String(buffer,0,read);
+                    int finalRead = read;
+                    Platform.runLater(()->{
+                        txtChatHistory.setText(lblName.getText()+" :"+ new String(buffer,0, finalRead)+"\n");
+                    });
+
                 }
-                txtChatHistory.setText(text);
 
             } catch (IOException e) {
                 e.printStackTrace();
@@ -77,50 +82,13 @@ public class ChatViewController {
             root.getScene().getWindow().setOnCloseRequest(e ->{
                 try {
                     OutputStream is = remoteSocket.getOutputStream();
-                    is.write("User left".getBytes());
+                    is.write((lblName.getText()+ " left\n").getBytes());
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
-                    //saveHistory();
 
             });
         });
     }
-    void readHistory(){
-        File file = new File("textHistory.txt");
-        try {
-            FileInputStream fis = new FileInputStream(file);
-            try {
-                BufferedInputStream bis = new BufferedInputStream(fis);
-                byte[] buffer = new byte[1024];
-                int read = -1;
-                String text = "";
-                while((read = bis.read(buffer)) != -1){
-                    text+= new String(buffer,0,read);
-                }
-                txtChatHistory.setText(text);
-            }catch (IOException e){
-                e.printStackTrace();
-            }
 
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    void saveHistory() throws IOException {
-        File file = new File("textHistory.txt");
-        try {
-            FileOutputStream fos = new FileOutputStream(file);
-            BufferedOutputStream bos = new BufferedOutputStream(fos);
-            String text = txtChatHistory.getText();
-            bos.write(text.getBytes());
-            bos.close();
-
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-    }
 }

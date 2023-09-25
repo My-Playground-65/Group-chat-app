@@ -23,6 +23,6 @@
             <Font size="21.0" />
          </font>
       </Button>
-      <Label fx:id="lblName" layoutX="43.0" layoutY="626.0" prefHeight="16.0" prefWidth="56.0" text="Name" />
+      <Label fx:id="lblName" layoutX="33.0" layoutY="626.0" text="Name" />
    </children>
 </AnchorPane>
