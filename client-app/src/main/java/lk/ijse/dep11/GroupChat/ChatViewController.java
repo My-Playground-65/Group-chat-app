@@ -46,7 +46,7 @@ public class ChatViewController {
     }
     public void initialize() throws IOException {
         remoteSocket = new Socket("192.168.136.102", 5500);
-        readHistory();
+//        readHistory();
         new Thread(() -> {
             InputStream is = null;
             try {
@@ -70,8 +70,14 @@ public class ChatViewController {
 
         Platform.runLater(()->{
             root.getScene().getWindow().setOnCloseRequest(e ->{
-               txtChatHistory.setText(txtChatHistory.getText()+"\n User left");
-               saveHistory();
+                try {
+                    OutputStream is = remoteSocket.getOutputStream();
+                    is.write("User left".getBytes());
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+                    //saveHistory();
+
             });
         });
     }
@@ -99,5 +105,17 @@ public class ChatViewController {
 
     }
 
-    
+    void saveHistory() throws IOException {
+        File file = new File("textHistory.txt");
+        try {
+            FileOutputStream fos = new FileOutputStream(file);
+            BufferedOutputStream bos = new BufferedOutputStream(fos);
+            String text = txtChatHistory.getText();
+            bos.write(text.getBytes());
+            bos.close();
+
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
