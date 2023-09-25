@@ -4,15 +4,14 @@ import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.scene.control.Button;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
+
 
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
+
 
 public class ChatViewController {
     public AnchorPane root;
@@ -20,6 +19,12 @@ public class ChatViewController {
     public ListView<String> lstLoggedUsers;
     public TextField txtMassage;
     public Button btnSend;
+    public Label lblName;
+
+    public static void initData(String name) {
+        
+
+    }
 
     public Socket remoteSocket;
 

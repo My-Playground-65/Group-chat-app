@@ -17,11 +17,12 @@
       </Label>
       <TextArea fx:id="txtChatHistory" layoutX="33.0" layoutY="80.0" prefHeight="515.0" prefWidth="413.0" />
       <ListView fx:id="lstLoggedUsers" layoutX="466.0" layoutY="80.0" prefHeight="515.0" prefWidth="200.0" />
-      <TextField fx:id="txtMassage" layoutX="33.0" layoutY="614.0" prefHeight="39.0" prefWidth="573.0" />
+      <TextField fx:id="txtMassage" layoutX="114.0" layoutY="614.0" prefHeight="39.0" prefWidth="492.0" />
       <Button fx:id="btnSend" defaultButton="true" layoutX="620.0" layoutY="614.0" mnemonicParsing="false" onAction="#btnSendOnAction" prefHeight="39.0" prefWidth="32.0" style="-fx-background-radius: 30px;" text="➤">
          <font>
             <Font size="21.0" />
          </font>
       </Button>
+      <Label fx:id="lblName" layoutX="43.0" layoutY="626.0" prefHeight="16.0" prefWidth="56.0" text="Name" />
    </children>
 </AnchorPane>
