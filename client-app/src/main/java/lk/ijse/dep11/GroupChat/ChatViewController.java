@@ -1,11 +1,10 @@
 package lk.ijse.dep11.GroupChat;
 
 import javafx.event.ActionEvent;
-import javafx.scene.control.Button;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.AnchorPane;
+
+import java.text.BreakIterator;
 
 public class ChatViewController {
     public AnchorPane root;
@@ -13,6 +12,12 @@ public class ChatViewController {
     public ListView lstLoggedUsers;
     public TextField txtMassage;
     public Button btnSend;
+    public Label lblName;
+
+    public static void initData(String name) {
+        
+
+    }
 
     public void btnSendOnAction(ActionEvent actionEvent) {
     }
