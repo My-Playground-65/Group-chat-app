@@ -1,5 +1,6 @@
 package lk.ijse.dep11.GroupChat;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -45,7 +46,7 @@ public class ChatViewController {
     }
     public void initialize() throws IOException {
         remoteSocket = new Socket("192.168.136.102", 5500);
-
+        readHistory();
         new Thread(() -> {
             InputStream is = null;
             try {
@@ -67,6 +68,36 @@ public class ChatViewController {
         ObservableList<String> userList = FXCollections.observableList(users);
         lstLoggedUsers.setItems(userList);
 
-        
+        Platform.runLater(()->{
+            root.getScene().getWindow().setOnCloseRequest(e ->{
+               txtChatHistory.setText(txtChatHistory.getText()+"\n User left");
+               saveHistory();
+            });
+        });
     }
+    void readHistory(){
+        File file = new File("textHistory.txt");
+        try {
+            FileInputStream fis = new FileInputStream(file);
+            try {
+                BufferedInputStream bis = new BufferedInputStream(fis);
+                byte[] buffer = new byte[1024];
+                int read = -1;
+                String text = "";
+                while((read = bis.read(buffer)) != -1){
+                    text+= new String(buffer,0,read);
+                }
+                txtChatHistory.setText(text);
+            }catch (IOException e){
+                e.printStackTrace();
+            }
+
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    
 }
